@@ -16,22 +16,8 @@ def save_votes(votes):
     with open("static/data.json", "w") as file:
         json.dump(votes, file)
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    votes = load_votes()
-    if request.method == "POST":
-        team_name = request.form.get("team")  # Get the selected team
-        if team_name not in votes:
-            return "Invalid vote", 400  # Error if the team does not exist
-        votes[team_name] += 1
-        save_votes(votes)
-        return jsonify({"message": "Vote recorded!"})
-    return render_template("index.html", votes=votes)
 
-@app.route("/results")
-def results():
-    votes = load_votes()
-    return render_template("results.html", votes=votes)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
