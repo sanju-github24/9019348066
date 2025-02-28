@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Poll</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <h1>Vote for a Team</h1>
+    <input type="text" id="teamName" placeholder="Enter your team name">
+    <select id="voteFor">
+        <option value="">-- Select a Team --</option>
+        <option value="Team A">Team A</option>
+        <option value="Team B">Team B</option>
+        <option value="Team C">Team C</option>
+    </select>
+    <button onclick="submitVote()">Vote</button>
+
+    <h2>Results</h2>
+    <canvas id="resultsChart"></canvas>
+
+    <script>
+        function submitVote() {
+            const teamName = document.getElementById("teamName").value;
+            const votedFor = document.getElementById("voteFor").value;
+
+            if (!teamName || !votedFor) {
+                alert("Please enter your team name and select a team to vote for.");
+                return;
+            }
+
+            fetch('/vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ team_name: teamName, voted_for: votedFor })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert("Vote recorded!");
+                    updateResults();
+                }
+            });
+        }
+
+        function updateResults() {
+            fetch('/results')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById("resultsChart").getContext("2d");
+                const labels = Object.keys(data);
+                const values = Object.values(data);
+
+                new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: "Votes",
+                            data: values,
+                            backgroundColor: "blue"
+                        }]
+                    }
+                });
+            });
+        }
+
+        updateResults();
+    </script>
+
+</body>
+</html>
