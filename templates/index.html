@@ -8,18 +8,15 @@
 </head>
 <body>
 
-    <h1>Vote for a Team</h1>
-    <input type="text" id="teamName" placeholder="Enter your team name">
-    <select id="voteFor">
-        <option value="">-- Select a Team --</option>
-        <option value="Team A">Team A</option>
-        <option value="Team B">Team B</option>
-        <option value="Team C">Team C</option>
-    </select>
-    <button onclick="submitVote()">Vote</button>
-
-    <h2>Results</h2>
-    <canvas id="resultsChart"></canvas>
+    <form method="POST">
+        <select name="team">
+            <option value="Team A">Team A</option>
+            <option value="Team B">Team B</option>
+            <option value="Team C">Team C</option>
+        </select>
+        <button type="submit">Vote</button>
+    </form>
+    
 
     <script>
         function submitVote() {
