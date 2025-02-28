@@ -1,43 +1,27 @@
-from flask import Flask, render_template, request, jsonify
-import json
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
-# Load votes from file
-def load_votes():
-    try:
-        with open("static/data.json", "r") as file:
-            return json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+# Define five teams
+teams = ["Team Alpha", "Team Beta", "Team Gamma", "Team Delta", "Team Epsilon"]
 
-# Save votes to file
-def save_votes(votes):
-    with open("static/data.json", "w") as file:
-        json.dump(votes, file)
-
-
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+votes = {team: 0 for team in teams}  # Initialize votes for each team
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    votes = load_votes()
     if request.method == "POST":
-        team_name = request.form.get("team")
-        print("Received vote for:", team_name)  # Debugging line
-        if team_name not in votes:
-            return "Invalid vote", 400
-        votes[team_name] += 1
-        save_votes(votes)
-        return jsonify({"message": "Vote recorded!"})
-    return render_template("index.html", votes=votes)
+        team_name = request.form["team_name"]
+        vote = request.form["vote"]
+
+        if vote in teams and vote != team_name:  # Prevent self-voting
+            votes[vote] += 1
+        return redirect(url_for("results"))
+
+    return render_template("index.html", teams=teams)
+
 @app.route("/results")
 def results():
-    secret_key = request.args.get("key")
-    if secret_key != "admin123":  # Change "admin123" to your own key
-        return "Access Denied", 403
-    votes = load_votes()
     return render_template("results.html", votes=votes)
+
+if __name__ == "__main__":
+    app.run(debug=True)

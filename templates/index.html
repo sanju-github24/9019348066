@@ -3,71 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voting Poll</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Voting System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <div class="container">
+        <h1>🏆 Vote for Your Favorite Team 🏆</h1>
+        <p>Select a team and submit your vote!</p>
 
-    <form method="POST">
-        <select name="team">
-            <option value="Team A">Team A</option>
-            <option value="Team B">Team B</option>
-            <option value="Team C">Team C</option>
-        </select>
-        <button type="submit">Vote</button>
-    </form>
-    
+        <form action="/" method="post">
+            <label for="team_name">🎤 Your Team Name:</label>
+            <input type="text" id="team_name" name="team_name" placeholder="Enter your team name" required>
 
-    <script>
-        function submitVote() {
-            const teamName = document.getElementById("teamName").value;
-            const votedFor = document.getElementById("voteFor").value;
+            <label for="vote">📌 Select a Team to Vote:</label>
+            <select id="vote" name="vote" required>
+                {% for team in teams %}
+                    <option value="{{ team }}">{{ team }}</option>
+                {% endfor %}
+            </select>
 
-            if (!teamName || !votedFor) {
-                alert("Please enter your team name and select a team to vote for.");
-                return;
-            }
-
-            fetch('/vote', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ team_name: teamName, voted_for: votedFor })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    alert("Vote recorded!");
-                    updateResults();
-                }
-            });
-        }
-
-        function updateResults() {
-            fetch('/results')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById("resultsChart").getContext("2d");
-                const labels = Object.keys(data);
-                const values = Object.values(data);
-
-                new Chart(ctx, {
-                    type: "bar",
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: "Votes",
-                            data: values,
-                            backgroundColor: "blue"
-                        }]
-                    }
-                });
-            });
-        }
-
-        updateResults();
-    </script>
-
+            <button type="submit">✅ Submit Vote</button>
+        </form>
+    </div>
 </body>
 </html>

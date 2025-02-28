@@ -1,30 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voting Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h2>Voting Results</h2>
-    <canvas id="resultsChart"></canvas>
-    <a href="{{ url_for('logout') }}">Logout</a>
+    <div class="container">
+        <h1>Voting Results</h1>
+        <canvas id="voteChart"></canvas>
+    </div>
 
     <script>
-       var votes = JSON.parse('{{ votes | tojson | safe }}');
+        const ctx = document.getElementById('voteChart').getContext('2d');
+        const voteData = JSON.parse('{{ votes | tojson | safe }}');
 
-        var labels = Object.keys(votes);
-        var data = Object.values(votes);
-
-        var ctx = document.getElementById('resultsChart').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,
+                labels: Object.keys(voteData),
                 datasets: [{
                     label: 'Votes',
-                    data: data,
-                    backgroundColor: 'blue'
+                    data: Object.values(voteData),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
                 }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
             }
         });
     </script>
