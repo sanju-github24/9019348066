@@ -1,72 +1,50 @@
-import sqlite3
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 
 app = Flask(__name__)
+app.secret_key = "your_secret_key"  # For session management
 
-# Initialize Database
-def init_db():
-    conn = sqlite3.connect("votes.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS votes (
-            team TEXT PRIMARY KEY,
-            count INTEGER DEFAULT 0
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-init_db()
-
-# Function to record votes
-def record_vote(team_name):
-    conn = sqlite3.connect("votes.db")
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT count FROM votes WHERE team=?", (team_name,))
-    row = cursor.fetchone()
-    
-    if row:
-        cursor.execute("UPDATE votes SET count = count + 1 WHERE team=?", (team_name,))
-    else:
-        cursor.execute("INSERT INTO votes (team, count) VALUES (?, ?)", (team_name, 1))
-    
-    conn.commit()
-    conn.close()
-
-# Function to get results
-def get_results():
-    conn = sqlite3.connect("votes.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT team, count FROM votes")
-    results = dict(cursor.fetchall())
-    conn.close()
-    return results
+votes = {}
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
 @app.route('/vote', methods=['POST'])
 def vote():
-    data = request.json
-    team_name = data.get("team_name")
-    voted_for = data.get("voted_for")
+    team_name = request.form.get('team')
+    vote_for = request.form.get('vote_for')
 
-    if not team_name or not voted_for:
-        return jsonify({"error": "Missing team name or vote"}), 400
-    
-    if team_name == voted_for:
-        return jsonify({"error": "You cannot vote for your own team"}), 400
-    
-    # Record vote in database
-    record_vote(voted_for)
-    
-    return jsonify({"message": "Vote recorded!"})
+    if team_name and vote_for and team_name != vote_for:
+        votes[vote_for] = votes.get(vote_for, 0) + 1
+        return jsonify({'message': 'Vote recorded successfully!'})
+    return jsonify({'error': 'Invalid vote'}), 400
 
-@app.route('/results', methods=['GET'])
-def results():
-    return jsonify(get_results())
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == "admin123":  # Change this password!
+            session['admin'] = True
+            return redirect(url_for('admin_results'))
+        return "Invalid password!", 403
+    return render_template('admin_login.html')
+
+@app.route('/admin/results')
+def admin_results():
+    if not session.get('admin'):
+        return redirect(url_for('admin_login'))  # Redirect if not logged in
+    return render_template('results.html', votes=votes)
+
+@app.route('/logout')
+def logout():
+    session.pop('admin', None)
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+@app.route('/results')
+def results():
+    if not session.get("admin_logged_in"):  # Example condition
+        return "Access Denied", 403
+    return render_template('results.html', votes=votes)

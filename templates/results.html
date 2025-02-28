@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voting Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Voting Results</h2>
+    <canvas id="resultsChart"></canvas>
+    <a href="{{ url_for('logout') }}">Logout</a>
+
+    <script>
+       var votes = JSON.parse('{{ votes | tojson | safe }}');
+
+        var labels = Object.keys(votes);
+        var data = Object.values(votes);
+
+        var ctx = document.getElementById('resultsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Votes',
+                    data: data,
+                    backgroundColor: 'blue'
+                }]
+            }
+        });
+    </script>
+</body>
+</html>
