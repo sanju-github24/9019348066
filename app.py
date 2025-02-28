@@ -2,21 +2,22 @@ from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
-# Define five teams
-teams = ["Team Alpha", "Team Beta", "Team Gamma", "Team Delta", "Team Epsilon"]
-
-votes = {team: 0 for team in teams}  # Initialize votes for each team
+# Sample teams
+teams = ["Team A", "Team B", "Team C", "Team D", "Team E"]
+votes = {team: 0 for team in teams}
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        team_name = request.form["team_name"]
-        vote = request.form["vote"]
-
-        if vote in teams and vote != team_name:  # Prevent self-voting
+        team_name = request.form.get("team_name")
+        vote = request.form.get("vote")
+        
+        if vote in teams and team_name and team_name != vote:
             votes[vote] += 1
-        return redirect(url_for("results"))
-
+            return render_template("thank_you.html")  # Show a thank you message instead of redirecting
+        else:
+            return "Invalid vote!", 400
+    
     return render_template("index.html", teams=teams)
 
 @app.route("/results")
